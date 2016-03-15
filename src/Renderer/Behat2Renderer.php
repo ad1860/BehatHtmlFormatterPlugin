@@ -29,6 +29,67 @@ class Behat2Renderer implements RendererInterface {
     }
 
     /**
+     * Renders before an exercice.
+     * @param object : BehatHTMLFormatter object
+     * @return string  : HTML generated
+     */
+    public function renderIndexBeforeExercise($obj)
+    {
+        $print = "<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.0 Strict//EN' 'http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd'>
+        <html xmlns ='http://www.w3.org/1999/xhtml'>
+        <head>
+            <meta http-equiv='Content-Type' content='text/html;charset=utf-8'/>
+            <title>Behat Test Suite</title> ".$this->getIndexCSS()."
+        </head>
+        <body>";
+        $print .= $this->getChartJS();
+
+        $print .= '<div class="chartBlock">';
+        $print .= '<div class="row charts">
+                <div class="canvas-holder">
+                    <div class="chart">
+                        <canvas id="chart-features" width="200" height="200"></canvas>
+                        <p><span id="featureDataFailedSum"></span> features failed of <span id="featureDataSum"></span> features</p>
+                    </div>
+                    <div class="chart">
+                        <canvas id="chart-scenarios" width="200" height="200"></canvas>
+                        <p><span id="scenarioDataFailedSum"></span> scenarios failed of <span id="scenarioDataSum"></span> scenarios</p>
+                    </div>
+                    <div class="chart">
+                        <canvas id="chart-steps" width="200" height="200"></canvas>
+                        <p><span id="stepsDataFailedSum"></span> steps failed of <span id="stepsDataSum"></span> steps</p>
+                    </div>
+                </div>
+            </div>';
+        $print .= "</div>";
+
+        $print .= '<div class="reportBlock"><div class="featureTitleBlock">';
+/*        $print .= '<div class="row charts">
+        <div class="col-sm-4">
+            <div class="canvas-holder">
+                <div><p>Passed/Failed Features <span id="featureDataPassedSum"></span> / <span id="featureDataFailedSum"></span></p></div>
+                <div><canvas id="chart-features" width="100" height="100"/></div>
+            </div>
+         </div>
+        <div class="col-sm-4">
+            <div class="canvas-holder">
+                <div><p>Passed/Failed Scenarious <span id="scenarioDataPassedSum"></span> / <span id="scenarioDataFailedSum"></span> </p></div>
+                <div><canvas id="chart-scenarios" width="100" height="100"/></div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="canvas-holder">
+               <div><p>Passed/Failed Steps <span id="stepsDataPassedSum"></span> / <span id="stepsDataFailedSum"></span></p></div>
+                <div><canvas id="chart-steps" width="100" height="100"/></div>
+            </div>
+        </div>
+    </div>';*/
+        return $print;
+
+    }
+
+
+    /**
      * Renders after an exercice.
      * @param object : BehatHTMLFormatter object
      * @return string  : HTML generated
@@ -128,6 +189,109 @@ class Behat2Renderer implements RendererInterface {
 
     }
 
+
+    /**
+     * Renders after an exercice.
+     * @param object : BehatHTMLFormatter object
+     * @return string  : HTML generated
+     */
+    public function renderAfterExerciseIFrame($obj)
+    {
+
+        //--> features results
+        $intFeatPassed = 0;
+        if(count($obj->getPassedFeatures()) > 0) {
+            $intFeatPassed = count($obj->getPassedFeatures());
+        }
+
+        $intFeatFailed = 0;
+        if(count($obj->getFailedFeatures()) > 0) {
+            $intFeatFailed = count($obj->getFailedFeatures());
+        }
+
+        //--> scenarios results
+        $intScePassed = 0;
+        if(count($obj->getPassedScenarios()) > 0) {
+            $intScePassed = count($obj->getPassedScenarios());
+        }
+
+        $intSceFailed = 0;
+        if(count($obj->getFailedScenarios()) > 0) {
+            $intSceFailed = count($obj->getFailedScenarios());
+        }
+
+        //--> steps results
+        $intStepsPassed = 0;
+        if(count($obj->getPassedSteps()) > 0) {
+            $intStepsPassed = count($obj->getPassedSteps());
+        }
+        $intStepsPending = 0;
+        if(count($obj->getPendingSteps()) > 0) {
+            $intStepsPending = count($obj->getPendingSteps());
+        }
+        $intStepsSkipped = 0;
+        if(count($obj->getSkippedSteps()) > 0) {
+            $intStepsSkipped = count($obj->getSkippedSteps());
+        }
+
+        $intStepsFailed = 0;
+        if(count($obj->getFailedSteps()) > 0) {
+            $intStepsFailed = count($obj->getFailedSteps());
+        }
+
+        //totals
+        $featTotal = (count($obj->getFailedFeatures()) + count($obj->getPassedFeatures()));
+        $sceTotal = (count($obj->getFailedScenarios()) + count($obj->getPassedScenarios()));
+        $stepsTotal = (count($obj->getFailedSteps()) + count($obj->getPassedSteps()) + count($obj->getSkippedSteps()) + count($obj->getPendingSteps()));
+
+        $featureName = $obj->getCurrentFeature()->getFileName();
+        $visaual = '';
+        $scenarios = $obj->getCurrentFeature()->getScenarios();
+        foreach ($scenarios as $scenario){
+            if (count($scenario->getTags()) > 0){
+            $tag = $scenario->getTags()[0];
+            if ($tag == "visual"){
+                $visaual = " @visual";
+                break;
+            }                
+            }
+        }
+
+        $featureTags = "@".implode(" @", $obj->getCurrentFeature()->getTags());
+        if($obj->getCurrentFeature()->getPassedClass() === 'failed'){
+            $print = '<div class="featureFailedTitle featureTitle" data-feat-failed = "'.$intFeatFailed.'" data-sce-failed = "'.$intSceFailed.'"
+                        data-steps-failed = "'.$intStepsFailed.'" data-sce-passed = "'.$intScePassed.'" data-steps-passed = "'.$intStepsPassed.'"
+                        data-steps-skipped = "'.$intStepsSkipped.'" data-steps-pending = "'.$intStepsPending.'"
+                        data-feat-total = "'.$featTotal.'" data-sce-total = "'.$sceTotal.'" data-steps-total = "'.$stepsTotal.'">
+                        <a href="'.$featureName.'.html" target="iframe">'.$featureName.' '.$visaual.'</a><br>
+                        <span class="featureTitle__comment">Scenarios: '.$sceTotal.' Steps: '.$stepsTotal.'</span>
+                        </div>';
+
+        }
+        else {
+            $print = '<div class="featureTitle" data-feat-passed = "'.$intFeatPassed.'" data-sce-passed = "'.$intScePassed.'"
+                        data-steps-passed = "'.$intStepsPassed.'" data-steps-skipped = "'.$intStepsSkipped.'" data-steps-pending = "'.$intStepsPending.'"
+                        data-feat-total = "'.$featTotal.'" data-sce-total = "'.$sceTotal.'" data-steps-total = "'.$stepsTotal.'">
+                        <a href="'.$featureName.'.html" target="iframe">'.$featureName.' '.$visaual.'</a><br>
+                        <span class="featureTitle__comment">Scenarios: '.$sceTotal.' Steps: '.$stepsTotal.'</span>
+                        </div>';
+        }
+        $print .= "\n";
+        return $print;
+    }
+    /**
+     * Renders after an exercice.
+     * @param object : BehatHTMLFormatter object
+     * @return string  : HTML generated
+     */
+    public function renderAfterExerciseIFrameEnd($obj)
+    {
+        $featureName = $obj->getCurrentFeature()->getName();
+        $print = '</div><div class="featureFrame"><iframe name="iframe" width="100%" height="100%"></iframe></div>';
+        return $print;
+    }
+
+
     /**
      * Renders before a suite.
      * @param object : BehatHTMLFormatter object
@@ -198,7 +362,6 @@ class Behat2Renderer implements RendererInterface {
                 <span>Scenarios passed : '.round($obj->getCurrentFeature()->getPercentPassed(), 2).'%,
                 Scenarios failed : '.round($obj->getCurrentFeature()->getPercentFailed(), 2).'%</span>';
         }
-
         $print .= '
             </div>
         </div>';
@@ -273,7 +436,7 @@ class Behat2Renderer implements RendererInterface {
                     <span class="keyword">'.$obj->getCurrentScenario()->getId().' Scenario Outline: </span>
                     <span class="title">'.$obj->getCurrentScenario()->getName().'</span>
                 </h3>
-                <ol>';
+               ';
 
         //TODO path is missing
 
@@ -287,7 +450,7 @@ class Behat2Renderer implements RendererInterface {
      */
     public function renderAfterOutline($obj)
     {
-        $this->renderAfterScenario($obj);
+        return $this->renderAfterScenario($obj);
     }
 
     /**
@@ -297,7 +460,6 @@ class Behat2Renderer implements RendererInterface {
      */
     public function renderBeforeStep($obj)
     {
-
         return '';
     }
 
@@ -342,20 +504,131 @@ class Behat2Renderer implements RendererInterface {
                             <span class="path">'.$strPath.'</span>
                         </div>';
         $exception = $step->getException();
+        $isVisual = in_array("visual", $obj->getCurrentScenario()->getTags());
         if(!empty($exception)) {
-            $relativeScreenshotPath = 'assets/screenshots/' . $feature->getScreenshotFolder() . '/' . $scenario->getScreenshotName();
-            $fullScreenshotPath = $obj->getBasePath() . '/results/html/' . $relativeScreenshotPath;
+            $relativeScreenshotPath = 'assets/screenshots/' . $feature->getScreenshotFolder() . DIRECTORY_SEPARATOR
+                                    . $scenario->getScreenshotName();
+            $fullScreenshotPath = $obj->getBasePath() . '/build/html/behat/' . $relativeScreenshotPath;
+
             $print .= '
                         <pre class="backtrace">'.$step->getException().'</pre>';
-            if(file_exists($fullScreenshotPath))
+            if (!$isVisual) {
+                $print .= '
+                        <div><img src="' . $relativeScreenshotPath . '.png"></div>';
+            }
+            //if visual test print results
+            if(file_exists($fullScreenshotPath) && $isVisual)
             {
-                $print .= '<a href="' . $relativeScreenshotPath . '">Screenshot</a>';
+                $elements = $this->dirToArray($fullScreenshotPath);
+                $allElements = $this->getFailedElements($elements);
+                $failedElements = $allElements[0];
+                $passedElements = $allElements[1];
+                //print failed elements
+                if (count($failedElements) >= 1){
+                    $print .= '<div class="visual_test"><h3>Show failed visual comparison +</h3><div>';
+                    foreach($failedElements as $element){
+                        $resultImagesOfElement = $this->dirToArray($fullScreenshotPath.DIRECTORY_SEPARATOR.$element);
+                        $srcActual = $resultImagesOfElement[0];
+                        $srcDiff = $resultImagesOfElement[1];
+                        $srcEtalon = $resultImagesOfElement[2];
+                        $currentElementRelativePath = $relativeScreenshotPath.DIRECTORY_SEPARATOR.$element;
+                        $print .= $element . ' - <br>';
+                        $print .= 'Etalon <br><img src="' . $currentElementRelativePath . DIRECTORY_SEPARATOR . $srcEtalon.'"><br>';
+                        $print .= 'Actual <br><img src="' . $currentElementRelativePath . DIRECTORY_SEPARATOR . $srcActual.'"><br>';
+                        $print .= 'Diff <br><img src="' . $currentElementRelativePath . DIRECTORY_SEPARATOR . $srcDiff.'">';
+                        $print .= '<br>';
+                    }
+                    $print .= '</div></div>';
+                }
+                $print .= '<div>';
+
+                //print passed elements
+                $print .= '<div class="visual_test"><h3>Show passed visual comparison +</h3><div class="hiddenTest">';
+                foreach($passedElements as $element){
+                    $currentElementRelativePath = $relativeScreenshotPath.DIRECTORY_SEPARATOR.$element;
+                    $resultImagesOfElement = $this->dirToArray($fullScreenshotPath.DIRECTORY_SEPARATOR.$element);
+                    $srcEtalon = $resultImagesOfElement[1];
+                    $srcActual = $resultImagesOfElement[0];
+                    $print .= $element . ' - <br>';
+                    $print .= 'Etalon <br><img src="' . $currentElementRelativePath . DIRECTORY_SEPARATOR . $srcEtalon . '"><br>';
+                    $print .= 'Actual <br><img src="' . $currentElementRelativePath . DIRECTORY_SEPARATOR . $srcActual . '"><br>';
+                    $print .= '<br>';
+                }
+                $print .= '</div></div>';
+            }
+        }
+
+        else if(empty($exception) && $isVisual) {
+            $relativeScreenshotPath = 'assets/screenshots/' . $feature->getScreenshotFolder() . DIRECTORY_SEPARATOR
+                . $scenario->getScreenshotName();
+            $fullScreenshotPath = $obj->getBasePath() . '/build/html/behat/' . $relativeScreenshotPath;
+
+            //if visual test print results
+            if(file_exists($fullScreenshotPath) && $isVisual)
+            {
+                $elements = $this->dirToArray($fullScreenshotPath);
+                $allElements = $this->getFailedElements($elements);
+                $failedElements = $allElements[0];
+                $passedElements = $allElements[1];
+                $print .= '<div>';
+                //print passed elements
+                $print .= '<div class="visual_test"><h3>Show passed visual comparison +</h3><div class="hiddenTest">';
+                foreach($passedElements as $element){
+                    $currentElementRelativePath = $relativeScreenshotPath.DIRECTORY_SEPARATOR.$element;
+                    $resultImagesOfElement = $this->dirToArray($fullScreenshotPath.DIRECTORY_SEPARATOR.$element);
+                    $srcEtalon = $resultImagesOfElement[1];
+                    $srcActual = $resultImagesOfElement[0];
+                    $print .= $element . ' - <br>';
+                    $print .= 'Etalon <br><img src="' . $currentElementRelativePath . DIRECTORY_SEPARATOR . $srcEtalon . '"><br>';
+                    $print .= 'Actual <br><img src="' . $currentElementRelativePath . DIRECTORY_SEPARATOR . $srcActual . '">';
+                    $print .= '<br>';
+                }
+                $print .= '</div></div>';
             }
         }
         $print .= '
                     </li>';
 
         return $print;
+    }
+
+
+    public function dirToArray($dir) {
+
+        $result = array();
+
+        $cdir = scandir($dir);
+        foreach ($cdir as $key => $value)
+        {
+            if (!in_array($value,array(".","..")))
+            {
+                if (is_dir($dir . DIRECTORY_SEPARATOR . $value))
+                {
+                    $result[$value] = $this->dirToArray($dir . DIRECTORY_SEPARATOR . $value);
+                }
+                else
+                {
+                    $result[] = $value;
+                }
+            }
+        }
+        return $result;
+    }
+
+    public function getFailedElements($blockElements){
+        $failedElements = array();
+        $passedElements = array();
+        foreach ($blockElements as $key_element=>$elements) {
+            foreach ($elements as $key_id=>$element){
+                if (count($element) == 3){
+                    $failedElements[] = $key_element.DIRECTORY_SEPARATOR.$key_id;
+                }
+                else {
+                    $passedElements[] = $key_element.DIRECTORY_SEPARATOR.$key_id;
+                }
+            }
+        }
+        return array($failedElements, $passedElements);
     }
 
     /**
@@ -395,6 +668,13 @@ class Behat2Renderer implements RendererInterface {
                 }
                 #behat .statistics.passed p {
                     border-color:#3D7700;
+                }
+                #behat .visual_test div {
+
+                }
+
+                .hiddenTest {
+                display: none;
                 }
                 #behat .suite {
                     margin:8px;
@@ -637,6 +917,24 @@ class Behat2Renderer implements RendererInterface {
                     content:' |-';
                     font-weight:bold;
                 }
+                .reportBlock {
+                    position: relative;
+                    overflow: hidden;
+                    border: 1px solid red;
+                    width: 100%;
+                    height: 800px;
+                }
+                .featureFrame {
+                    float: left;
+                    width: 80%;
+                    height:800px;
+                }
+
+                .featureTitle {
+                    float: left;
+                    width: 20%;
+                    height:800px;
+                }
             </style>
 
             <style type='text/css' media='print'>
@@ -691,6 +989,66 @@ class Behat2Renderer implements RendererInterface {
     }
 
     /**
+     * To include CSS
+     * @return string  : HTML generated
+     */
+    public function getIndexCSS()
+    {
+
+        return "<style type='text/css'>
+                body {
+                    margin:0px;
+                    padding:0px;
+                    position:relative;
+                    padding-top:10 px;
+                }
+                .reportBlock {
+                    position: relative;
+                    overflow: hidden;
+                    border: 1px solid red;
+                    width: 100%;
+                    height: 800px;
+                }
+                .featureFrame {
+                    float: left;
+                    width: 70%;
+                    height:800px;
+                }
+                .featureTitleBlock {
+                    float: left;
+                    width: 30%;
+                    height:800px;
+					overflow-y: scroll;
+                }
+                .chart {
+                    float: left;
+                    margin-right: 30px;
+                }
+                .featureFailedTitle {
+                    background-color:#FFBDBD;
+                }
+                .row charts {
+                    position: relative;
+                   left: 30%;
+                }
+                .canvas-holder{
+                   display: inline-block;
+                   position: relative;
+                   left: 30%;
+                }
+                .featureTitle{
+                    color: blue;
+                    margin: 5px 0 0 10px;
+                }
+                .featureTitle__comment {
+                    margin-left: 10px;
+                    font-size: 14px;
+                    color: #5F5F5F;
+                }
+            </style>";
+        }
+
+    /**
      * To include JS
      * @return string  : HTML generated
      */
@@ -711,6 +1069,10 @@ class Behat2Renderer implements RendererInterface {
                 $('#behat .scenario h3').click(function(){
                     $(this).parent().toggleClass('jq-toggle-opened');
                 }).parent().addClass('jq-toggle');
+
+                $('#behat .visual_test h3').click(function(){
+                    $(this).parent().children('div').toggleClass('hiddenTest');
+                });
 
                 $('#behat_show_all').click(function(){
                     $('#behat .feature').addClass('jq-toggle-opened');
@@ -783,6 +1145,9 @@ class Behat2Renderer implements RendererInterface {
                         feature.addClass('jq-toggle-opened');
                     });
 
+                $('.featureTitle').height($('.reportBlock').height());
+                $('.featureFrame').height($('.reportBlock').height());
+
                 $('#behat .summary .counters .steps .pending')
                     .addClass('switcher')
                     .click(function(){
@@ -797,5 +1162,106 @@ class Behat2Renderer implements RendererInterface {
             });
         </script>";
 
+    }
+
+    /**
+     * To include JS
+     * @return string  : HTML generated
+     */
+    public function getChartJS()
+    {
+        return "<script src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js'></script>
+        <script src='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js'></script>
+        <script src='https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js'></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js'></script>
+        <script type='text/javascript'>
+
+        var featureData = [
+            {
+                value: 0,
+                color: '#F7464A',
+                highlight: '#FF5A5E',
+                label: 'Failed'
+            },
+            {
+                value: 0,
+                color: '#00a65a',
+                highlight: '#5AD3D1',
+                label: 'Passed'
+            },
+        ];
+
+        var scenarioData = [
+            {
+                value: 0,
+                color: '#F7464A',
+                highlight: '#FF5A5E',
+                label: 'Failed'
+            },
+            {
+                value: 0,
+                color: '#00a65a',
+                highlight: '#5AD3D1',
+                label: 'Passed'
+            },
+        ];
+
+        var stepData = [
+            {
+                value: 0,
+                color: '#F7464A',
+                highlight: '#FF5A5E',
+                label: 'Failed'
+            },
+            {
+                value: 0,
+                color: '#00a65a',
+                highlight: '#5AD3D1',
+                label: 'Passed'
+            },
+        ];
+
+        window.onload = function () {
+            var featureDataFailedSum = 0,
+                featureDataPassedSum = 0,
+                scenarioDataFailedSum = 0,
+                scenarioDataPassedSum = 0,
+                stepsDataFailedSum = 0,
+                stepsDataPassedSum = 0;
+
+            $('.featureTitle').each(function () {
+                featureDataFailedSum += $(this).attr('data-feat-failed') ? +$(this).attr('data-feat-failed') : 0;
+                featureDataPassedSum += $(this).attr('data-feat-passed') ? +$(this).attr('data-feat-passed') : 0;
+                document.getElementById('featureDataFailedSum').innerHTML = featureDataFailedSum;
+                document.getElementById('featureDataSum').innerHTML = featureDataFailedSum + featureDataPassedSum;
+
+                scenarioDataFailedSum += $(this).attr('data-sce-failed') ? +$(this).attr('data-sce-failed') : 0;
+                scenarioDataPassedSum += $(this).attr('data-sce-passed') ? +$(this).attr('data-sce-passed') : 0;
+                document.getElementById('scenarioDataFailedSum').innerHTML = scenarioDataFailedSum;
+                document.getElementById('scenarioDataSum').innerHTML = scenarioDataPassedSum + scenarioDataFailedSum;
+
+                stepsDataFailedSum += $(this).attr('data-steps-failed') ? +$(this).attr('data-steps-failed') : 0;
+                stepsDataPassedSum += $(this).attr('data-steps-passed') ? +$(this).attr('data-steps-passed') : 0;
+                document.getElementById('stepsDataFailedSum').innerHTML = stepsDataFailedSum;
+                document.getElementById('stepsDataSum').innerHTML = stepsDataPassedSum + stepsDataFailedSum;
+            });
+
+            featureData[0].value = featureDataFailedSum;
+            featureData[1].value = featureDataPassedSum;
+
+            scenarioData[0].value = scenarioDataFailedSum;
+            scenarioData[1].value = scenarioDataPassedSum;
+
+            stepData[0].value = stepsDataFailedSum;
+            stepData[1].value = stepsDataPassedSum;
+
+            var featureChart = document.getElementById('chart-features').getContext('2d');
+            var scenarioChart = document.getElementById('chart-scenarios').getContext('2d');
+            var stepChart = document.getElementById('chart-steps').getContext('2d');
+            new Chart(featureChart).Doughnut(featureData);
+            new Chart(scenarioChart).Doughnut(scenarioData);
+            new Chart(stepChart).Doughnut(stepData);
+        };
+    </script>";
     }
 }

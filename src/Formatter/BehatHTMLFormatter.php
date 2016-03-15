@@ -19,6 +19,7 @@ use Behat\Testwork\EventDispatcher\Event\BeforeSuiteTested;
 use Behat\Testwork\Output\Exception\BadOutputPathException;
 use Behat\Testwork\Output\Formatter;
 use Behat\Testwork\Output\Printer\OutputPrinter;
+use emuse\BehatHTMLFormatter\Classes\Example;
 use emuse\BehatHTMLFormatter\Classes\Feature;
 use emuse\BehatHTMLFormatter\Classes\Scenario;
 use emuse\BehatHTMLFormatter\Classes\Step;
@@ -193,6 +194,8 @@ class BehatHTMLFormatter implements Formatter {
             'tester.feature_tested.after'      => 'onAfterFeatureTested',
             'tester.scenario_tested.before'    => 'onBeforeScenarioTested',
             'tester.scenario_tested.after'     => 'onAfterScenarioTested',
+            'tester.example_tested.before'     => 'onBeforeScenarioTested',
+            'tester.example_tested.after'      => 'onAfterScenarioTested',
             'tester.outline_tested.before'     => 'onBeforeOutlineTested',
             'tester.outline_tested.after'      => 'onAfterOutlineTested',
             'tester.step_tested.after'         => 'onAfterStepTested',
@@ -407,8 +410,13 @@ class BehatHTMLFormatter implements Formatter {
     {
         $this->timer->start();
 
-        $print = $this->renderer->renderBeforeExercise($this);
-        $this->printer->write($print);
+        /*Old logic*/
+/*      $print = $this->renderer->renderBeforeExercise($this);*/
+/*        $this->printer->write($print);*/
+
+        /*New logic*/
+        $print = $this->renderer->renderIndexBeforeExercise($this);
+        $this->printer->writeIndex($print);
     }
 
     /**
@@ -416,12 +424,24 @@ class BehatHTMLFormatter implements Formatter {
      */
     public function onAfterExercise(AfterExerciseCompleted $event)
     {
-
         $this->timer->stop();
-
         $print = $this->renderer->renderAfterExercise($this);
-        $this->printer->writeln($print);
+        /*Old logic*/
+        /*$this->printer->writeln($print);*/
+
+        /*New logic*/
+
+        //print in feature report file
+        //$featureName = $this->getCurrentFeature()->getName();
+        $featureName = $this->getCurrentFeature()->getFileName();
+        $this->printer->featureWriteln($print, $featureName);
+        //print in index file link to feature report
+        $printIndexEnd = $this->renderer->renderAfterExerciseIFrameEnd($this);
+        $printFeatureTitle = $this->renderer->renderAfterExerciseIFrame($this);
+        $this->printer->writeIndexFeatureLink($printFeatureTitle, $printIndexEnd);
+        $this->printer->writeIndexEnd($printIndexEnd);
     }
+
 
     /**
      * @param BeforeSuiteTested $event
@@ -430,9 +450,10 @@ class BehatHTMLFormatter implements Formatter {
     {
         $this->currentSuite = new Suite();
         $this->currentSuite->setName($event->getSuite()->getName());
-
+        $this->getCurrentFeature();
         $print = $this->renderer->renderBeforeSuite($this);
-        $this->printer->writeln($print);
+        /*Old logic, commet as tag for current suite noy used in index file*/
+/*        $this->printer->writeln($print);*/
     }
 
     /**
@@ -443,7 +464,13 @@ class BehatHTMLFormatter implements Formatter {
         $this->suites[] = $this->currentSuite;
 
         $print = $this->renderer->renderAfterSuite($this);
-        $this->printer->writeln($print);
+        /*Old logic*/
+        /*$this->printer->writeln($print);*/
+
+        /*New logic*/
+        //$featureName = $this->getCurrentFeature()->getName();
+        $featureName = $this->getCurrentFeature()->getFileName();
+        $this->printer->featureWriteln($print, $featureName);
     }
 
     /**
@@ -458,11 +485,28 @@ class BehatHTMLFormatter implements Formatter {
         $feature->setDescription($event->getFeature()->getDescription());
         $feature->setTags($event->getFeature()->getTags());
         $feature->setFile($event->getFeature()->getFile());
-        $feature->setScreenshotFolder($event->getFeature()->getTitle());
+
+        //$feature->setScreenshotFolder($event->getFeature()->getTitle());
+        /*Set feature name as file name*/
+        $feature->setFileName($event->getFeature()->getFile());
+        $featureName = $feature->getFileName();
+        $feature->setScreenshotFolder($featureName);
+
         $this->currentFeature = $feature;
 
+        /*Old logic*/
+/*      $print = $this->renderer->renderBeforeFeature($this);
+        $this->printer->writeln($print);*/
+
+        /*New logic*/
+        $printBeforeExercise = $this->renderer->renderBeforeExercise($this);
+        $printBeforeSuite = $this->renderer->renderBeforeSuite($this);
         $print = $this->renderer->renderBeforeFeature($this);
-        $this->printer->writeln($print);
+
+        //$featureName = $this->getCurrentFeature()->getName();
+        $this->printer->featureWriteln($printBeforeExercise, $featureName);
+        $this->printer->featureWriteln($printBeforeSuite, $featureName);
+        $this->printer->featureWriteln($print, $featureName);
     }
 
     /**
@@ -476,9 +520,17 @@ class BehatHTMLFormatter implements Formatter {
         } else {
             $this->failedFeatures[] = $this->currentFeature;
         }
-
+        $this->currentFeature->getPercentPassed();
         $print = $this->renderer->renderAfterFeature($this);
-        $this->printer->writeln($print);
+
+        /*Old logic*/
+        /*$this->printer->writeln($print);*/
+
+        /*New logic*/
+        //$featureName = $this->getCurrentFeature()->getName();
+        $featureName = $this->getCurrentFeature()->getFileName();
+        $this->printer->featureWriteln($print, $featureName);
+
     }
 
     /**
@@ -492,9 +544,15 @@ class BehatHTMLFormatter implements Formatter {
         $scenario->setLine($event->getScenario()->getLine());
         $scenario->setScreenshotName($event->getScenario()->getTitle());
         $this->currentScenario = $scenario;
-
+        $this->getCurrentFeature();
         $print = $this->renderer->renderBeforeScenario($this);
-        $this->printer->writeln($print);
+        /*Old logic*/
+        /*$this->printer->writeln($print);*/
+
+        /*New logic*/
+        //$featureName = $this->getCurrentFeature()->getName();
+        $featureName = $this->getCurrentFeature()->getFileName();
+        $this->printer->featureWriteln($print, $featureName);
     }
 
     /**
@@ -515,9 +573,14 @@ class BehatHTMLFormatter implements Formatter {
         $this->currentScenario->setLoopCount(1);
         $this->currentScenario->setPassed($event->getTestResult()->isPassed());
         $this->currentFeature->addScenario($this->currentScenario);
-
         $print = $this->renderer->renderAfterScenario($this);
-        $this->printer->writeln($print);
+        /*Old logic*/
+        /*$this->printer->writeln($print);*/
+
+        /*New logic*/
+        //$featureName = $this->getCurrentFeature()->getName();
+        $featureName = $this->getCurrentFeature()->getFileName();
+        $this->printer->featureWriteln($print, $featureName);
     }
 
     /**
@@ -530,9 +593,14 @@ class BehatHTMLFormatter implements Formatter {
         $scenario->setTags($event->getOutline()->getTags());
         $scenario->setLine($event->getOutline()->getLine());
         $this->currentScenario = $scenario;
-
         $print = $this->renderer->renderBeforeOutline($this);
-        $this->printer->writeln($print);
+        /*Old logic*/
+        /*$this->printer->writeln($print);*/
+
+        /*New logic*/
+        //$featureName = $this->getCurrentFeature()->getName();
+        $featureName = $this->getCurrentFeature()->getFileName();
+        $this->printer->featureWriteln($print, $featureName);
     }
 
     /**
@@ -540,8 +608,9 @@ class BehatHTMLFormatter implements Formatter {
      */
     public function onAfterOutlineTested(AfterOutlineTested $event)
     {
-        $scenarioPassed = $event->getTestResult()->isPassed();
-
+        /*Old logic*/
+        /*Was commented as if in outline scenario was failed one scenario example then in report we get 2 fails scenerios but we should report just 1 fail*/
+/*      $scenarioPassed = $event->getTestResult()->isPassed();
         if($scenarioPassed) {
             $this->passedScenarios[] = $this->currentScenario;
             $this->currentFeature->addPassedScenario();
@@ -549,13 +618,17 @@ class BehatHTMLFormatter implements Formatter {
             $this->failedScenarios[] = $this->currentScenario;
             $this->currentFeature->addFailedScenario();
         }
-
         $this->currentScenario->setLoopCount(sizeof($event->getTestResult()));
         $this->currentScenario->setPassed($event->getTestResult()->isPassed());
         $this->currentFeature->addScenario($this->currentScenario);
-
         $print = $this->renderer->renderAfterOutline($this);
-        $this->printer->writeln($print);
+        $this->printer->writeln($print);*/
+
+        /*New logic*/
+        $print = $this->renderer->renderAfterOutline($this);
+        //$featureName = $this->getCurrentFeature()->getName();
+        $featureName = $this->getCurrentFeature()->getFileName();
+        $this->printer->featureWriteln($print, $featureName);
     }
 
     /**
@@ -564,7 +637,13 @@ class BehatHTMLFormatter implements Formatter {
     public function onBeforeStepTested(BeforeStepTested $event)
     {
         $print = $this->renderer->renderBeforeStep($this);
-        $this->printer->writeln($print);
+        /*Old logic*/
+        /*$this->printer->writeln($print);*/
+
+        /*New logic*/
+        //$featureName = $this->getCurrentFeature()->getName();
+        $featureName = $this->getCurrentFeature()->getFileName();
+        $this->printer->featureWriteln($print, $featureName);
     }
 
     /**
@@ -613,7 +692,13 @@ class BehatHTMLFormatter implements Formatter {
         $this->currentScenario->addStep($step);
 
         $print = $this->renderer->renderAfterStep($this);
-        $this->printer->writeln($print);
+        /*Old logic*/
+        /*$this->printer->writeln($print);*/
+
+        /*New logic*/
+        //$featureName = $this->getCurrentFeature()->getName();
+        $featureName = $this->getCurrentFeature()->getFileName();
+        $this->printer->featureWriteln($print, $featureName);
     }
     //</editor-fold>
 

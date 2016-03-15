@@ -18,11 +18,25 @@ interface RendererInterface {
     public function renderBeforeExercise($obj);
 
     /**
+     * Renders before an exercice.
+     * @param object : BehatHTMLFormatter object
+     * @return string  : HTML generated
+     */
+    public function renderIndexBeforeExercise($obj);
+
+    /**
      * Renders after an exercice.
      * @param object : BehatHTMLFormatter object
      * @return string  : HTML generated
      */
     public function renderAfterExercise($obj);
+
+    /**
+     * Renders after an exercice.
+     * @param object : BehatHTMLFormatter object
+     * @return string  : HTML generated Feature report link
+     */
+    public function renderAfterExerciseIFrame($obj);
 
     /**
      * Renders before a suite.
@@ -99,6 +113,12 @@ interface RendererInterface {
      * @return string  : HTML generated
      */
     public function getCSS();
+
+    /**
+     * To include CSS
+     * @return string  : HTML generated
+     */
+    public function getIndexCSS();
 
     /**
      * To include JS

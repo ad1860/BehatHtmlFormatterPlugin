@@ -57,17 +57,19 @@ class FileOutputPrinter implements PrinterInterface {
    */
   public function setOutputPath($path) {
     $outpath = $path;
-    if (!file_exists($outpath)) {
-      if (!mkdir($outpath, 0755, TRUE)) {
-        throw new BadOutputPathException(
-          sprintf(
-            'Output path %s does not exist and could not be created!',
-            $outpath
-          ),
-          $outpath
-        );
-      }
+    for ($i=0; $i < 3 && !file_exists($outpath); $i++, sleep(3)) {
+       $flag = @mkdir($outpath, 0755, TRUE);
+        echo($i . ";" . $flag);
     }
+      if (!file_exists($outpath)) {
+          throw new BadOutputPathException(
+              sprintf(
+                  'Output path %s does not exist and could not be created!',
+                  $outpath
+              ),
+              $outpath
+          );
+      }
     else {
       if (!is_dir(realpath($outpath))) {
         throw new BadOutputPathException(
@@ -146,10 +148,10 @@ class FileOutputPrinter implements PrinterInterface {
   }
 
   /**
-   * Writes message(s) to output console.
-   *
-   * @param string|array $messages message or array of messages
-   */
+ * Writes message(s) to output console.
+ *
+ * @param string|array $messages message or array of messages
+ */
   public function write($messages = array()) {
     //Write it for each message = each renderer
     foreach ($messages as $key => $message) {
@@ -159,6 +161,66 @@ class FileOutputPrinter implements PrinterInterface {
     }
   }
 
+  /**
+   * Writes message(s) to output console.
+   *
+   * @param string|array $messages message or array of messages
+   */
+  public function writeIndex($messages = array()) {
+    //Write it for each message = each renderer
+    foreach ($messages as $key => $message) {
+      $file = $this->outputPath . DIRECTORY_SEPARATOR . $this->rendererFiles[$key] . '.html';
+
+      if (!file_exists($file)) {
+        file_put_contents($file, $message);
+        $this->copyAssets($key);
+      }
+    }
+  }
+
+  /**
+   * Writes message(s) to output console.
+   *
+   * @param string|array $messages message or array of messages
+   */
+  public function writeIndexEnd($messages = array()) {
+    //Write it for each message = each renderer
+    foreach ($messages as $key => $message) {
+      $file = $this->outputPath . DIRECTORY_SEPARATOR . $this->rendererFiles[$key] . '.html';
+      $lastLineNumber = sizeof(file($file)) - 1;
+      if(strpos(file($file)[$lastLineNumber],'iframe name') == false)
+          {
+            file_put_contents($file, $message, FILE_APPEND);
+          }
+    }
+}
+
+  /**
+   * Writes message(s) to output console.
+   *
+   * @param string|array $messages message or array of messages
+   */
+  public function writeIndexFeatureLink($messages = array(), $indexEndTags) {
+    //Write it for each message = each renderer
+    foreach ($messages as $key => $message) {
+      $file = $this->outputPath . DIRECTORY_SEPARATOR . $this->rendererFiles[$key] . '.html';
+      $lastLineNumber = sizeof(file($file))-1;
+      if(strpos(file($file)[$lastLineNumber],'iframe name') == false)
+      {
+        file_put_contents($file, $message, FILE_APPEND);
+      }
+      else{
+        $lines = file($file);
+        $last = sizeof($lines) - 1;
+        unset($lines[$last]);
+        $fp = fopen($file, 'w');
+        fwrite($fp, implode('', $lines));
+        fclose($fp);
+        file_put_contents($file, $message, FILE_APPEND);
+        file_put_contents($file, $indexEndTags, FILE_APPEND);
+      }
+    }
+  }
 
   /**
    * Writes newlined message(s) to output console.
@@ -169,6 +231,19 @@ class FileOutputPrinter implements PrinterInterface {
     //Write it for each message = each renderer
     foreach ($messages as $key => $message) {
       $file = $this->outputPath . DIRECTORY_SEPARATOR . $this->rendererFiles[$key] . '.html';
+      file_put_contents($file, $message, FILE_APPEND);
+    }
+  }
+
+  /**
+   * Writes newlined message(s) to output console.
+   *
+   * @param string|array $messages message or array of messages
+   */
+  public function featureWriteln($messages = array(), $featureName) {
+    //Write it for each message = each renderer
+    foreach ($messages as $key => $message) {
+      $file = $this->outputPath . DIRECTORY_SEPARATOR . $featureName . '.html';
       file_put_contents($file, $message, FILE_APPEND);
     }
   }

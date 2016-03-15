@@ -17,6 +17,7 @@ class Feature
     private $description;
     private $tags;
     private $file;
+    private $fileName;
     private $screenshotFolder;
     private $failedScenarios = 0;
     private $passedScenarios = 0;
@@ -43,6 +44,26 @@ class Feature
     public function setName($name)
     {
         $this->name = $name;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getFileName()
+    {
+        return $this->fileName;
+    }
+
+    /**
+     * @param mixed $fileName
+     */
+    public function setFileName($fileName)
+    {
+        $fileName = pathinfo($fileName)['basename'];
+        $fileName = preg_replace('/[^A-Za-z0-9]/', ' ', $fileName);
+        $fileName = preg_replace('/\s+/', ' ', $fileName);
+        $fileName = str_replace(' ', '_', $fileName);
+        $this->fileName = $fileName;
     }
 
     /**
@@ -108,7 +129,7 @@ class Feature
      */
     public function setScreenshotFolder($featureName)
     {
-        $this->screenshotFolder = str_replace(' ','', $featureName);
+        $this->screenshotFolder = str_replace(' ','_', $featureName);
     }
 
     /**

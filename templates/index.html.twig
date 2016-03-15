@@ -200,6 +200,11 @@
                                                 {% if printLoopBreak is not null and ( loop.index % scenario.getLoopSize ) == 0 and loop.last != true  %}
                                                     </li><li class="list-group-item break">
                                                 {% endif %}
+                                                {% if (feature.getPassedClass=='failed' and feature.getTags[0] == 'visual' and step.keyword == 'Then') %}
+                                                <p>
+                                                Actual <img src="assets/screenshots/{{ feature.name|replace({" ": "_"}) }}/{{ scenario.name }}/actual.png">
+                                                </p>
+                                                {% endif %}
                                             </li>
                                             {#<div class="bs-callout bs-callout-{% if step.passed %}success{% else %}danger{% endif %}" id="callout-collapse-accessibility">#}
                                             {#<b>{{ step.keyword }}</b> {{ step.text }}#}

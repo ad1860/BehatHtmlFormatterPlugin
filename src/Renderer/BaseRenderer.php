@@ -66,6 +66,21 @@ class BaseRenderer {
 
         return $print;
     }
+    /**
+     * Renders before an exercice.
+     * @param object : BehatHTMLFormatter object
+     * @return string  : HTML generated
+     */
+    public function renderIndexBeforeExercise($obj)
+    {
+
+        $print = array();
+        foreach($this->rendererList as $name => $renderer) {
+            $print[ $name ] = $renderer->renderIndexBeforeExercise($obj);
+        }
+
+        return $print;
+    }
 
     /**
      * Renders after an exercice.
@@ -81,6 +96,37 @@ class BaseRenderer {
 
         return $print;
     }
+
+    /**
+     * Renders after an exercice.
+     * @param object : BehatHTMLFormatter object
+     * @return string  : HTML generated
+     */
+    public function renderAfterExerciseIFrame($obj)
+    {
+        $print = array();
+        foreach($this->rendererList as $name => $renderer) {
+            $print[ $name ] = $renderer->renderAfterExerciseIFrame($obj);
+        }
+
+        return $print;
+    }
+
+    /**
+     * Renders after an exercice.
+     * @param object : BehatHTMLFormatter object
+     * @return string  : HTML generated
+     */
+    public function renderAfterExerciseIFrameEnd($obj)
+    {
+        $print = array();
+        foreach($this->rendererList as $name => $renderer) {
+            $print[ $name ] = $renderer->renderAfterExerciseIFrameEnd($obj);
+        }
+
+        return $print;
+    }
+
 
     /**
      * Renders before a suite.
