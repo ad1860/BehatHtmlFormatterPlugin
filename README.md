@@ -4,13 +4,10 @@ Behat 3 extension for generating HTML reports from your test results.
 
 [![Latest Stable Version](https://poser.pugx.org/emuse/behat-html-formatter/v/stable)](https://packagist.org/packages/emuse/behat-html-formatter) [![Total Downloads](https://poser.pugx.org/emuse/behat-html-formatter/downloads)](https://packagist.org/packages/emuse/behat-html-formatter) [![Latest Unstable Version](https://poser.pugx.org/emuse/behat-html-formatter/v/unstable)](https://packagist.org/packages/emuse/behat-html-formatter) [![License](https://poser.pugx.org/emuse/behat-html-formatter/license)](https://packagist.org/packages/emuse/behat-html-formatter)
 
-### Twig report
-
-![Twig Screenshot](http://i.imgur.com/o0zCqiB.png)
 
 ### Behat 2 report
 
-![Behat2 Screenshot](http://i57.tinypic.com/287g942.jpg)
+![Behat2 Screenshot](http://i63.tinypic.com/29w7jww.png)
 
 
 ## How?
