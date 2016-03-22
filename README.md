@@ -12,6 +12,8 @@ Behat 3 extension for generating HTML reports from your test results.
 
 ## How?
 
+* Detailed instruction here http://parallelandvisualtestingwithbehat.blogspot.com/p/blog-page.html
+
 * The tool can be installed easily with composer.
 * Defining the formatter in the `behat.yml` file
 * Modifying the settings in the `behat.yml`file
