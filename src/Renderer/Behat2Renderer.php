@@ -64,26 +64,26 @@ class Behat2Renderer implements RendererInterface {
         $print .= "</div>";
 
         $print .= '<div class="reportBlock"><div class="featureTitleBlock">';
-/*        $print .= '<div class="row charts">
-        <div class="col-sm-4">
-            <div class="canvas-holder">
-                <div><p>Passed/Failed Features <span id="featureDataPassedSum"></span> / <span id="featureDataFailedSum"></span></p></div>
-                <div><canvas id="chart-features" width="100" height="100"/></div>
-            </div>
-         </div>
-        <div class="col-sm-4">
-            <div class="canvas-holder">
-                <div><p>Passed/Failed Scenarious <span id="scenarioDataPassedSum"></span> / <span id="scenarioDataFailedSum"></span> </p></div>
-                <div><canvas id="chart-scenarios" width="100" height="100"/></div>
-            </div>
-        </div>
-        <div class="col-sm-4">
-            <div class="canvas-holder">
-               <div><p>Passed/Failed Steps <span id="stepsDataPassedSum"></span> / <span id="stepsDataFailedSum"></span></p></div>
-                <div><canvas id="chart-steps" width="100" height="100"/></div>
-            </div>
-        </div>
-    </div>';*/
+        /*        $print .= '<div class="row charts">
+                <div class="col-sm-4">
+                    <div class="canvas-holder">
+                        <div><p>Passed/Failed Features <span id="featureDataPassedSum"></span> / <span id="featureDataFailedSum"></span></p></div>
+                        <div><canvas id="chart-features" width="100" height="100"/></div>
+                    </div>
+                 </div>
+                <div class="col-sm-4">
+                    <div class="canvas-holder">
+                        <div><p>Passed/Failed Scenarious <span id="scenarioDataPassedSum"></span> / <span id="scenarioDataFailedSum"></span> </p></div>
+                        <div><canvas id="chart-scenarios" width="100" height="100"/></div>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="canvas-holder">
+                       <div><p>Passed/Failed Steps <span id="stepsDataPassedSum"></span> / <span id="stepsDataFailedSum"></span></p></div>
+                        <div><canvas id="chart-steps" width="100" height="100"/></div>
+                    </div>
+                </div>
+            </div>';*/
         return $print;
 
     }
@@ -249,11 +249,11 @@ class Behat2Renderer implements RendererInterface {
         $scenarios = $obj->getCurrentFeature()->getScenarios();
         foreach ($scenarios as $scenario){
             if (count($scenario->getTags()) > 0){
-            $tag = $scenario->getTags()[0];
-            if ($tag == "visual"){
-                $visaual = " @visual";
-                break;
-            }                
+                $tag = $scenario->getTags()[0];
+                if ($tag == "visual"){
+                    $visaual = " @visual";
+                    break;
+                }
             }
         }
 
@@ -420,7 +420,7 @@ class Behat2Renderer implements RendererInterface {
      */
     public function renderBeforeOutline($obj)
     {
-         //scenario head
+        //scenario head
         $print = '
             <div class="scenario">
                 <ul class="tags">';
@@ -501,13 +501,13 @@ class Behat2Renderer implements RendererInterface {
                         <div class="step">
                             <span class="keyword">'.$step->getKeyWord().' </span>
                             <span class="text">'.$step->getText().' </span>
-                            <span class="path">'.$strPath.'</span>
+                            <span class="path">'.$obj->getStepTimer().' '.$strPath.'</span>
                         </div>';
         $exception = $step->getException();
         $isVisual = in_array("visual", $obj->getCurrentScenario()->getTags());
         if(!empty($exception)) {
             $relativeScreenshotPath = 'assets/screenshots/' . $feature->getScreenshotFolder() . DIRECTORY_SEPARATOR
-                                    . $scenario->getScreenshotName();
+                . $scenario->getScreenshotName();
             $fullScreenshotPath = $obj->getBasePath() . '/build/html/behat/' . $relativeScreenshotPath;
 
             $print .= '
@@ -1046,7 +1046,7 @@ class Behat2Renderer implements RendererInterface {
                     color: #5F5F5F;
                 }
             </style>";
-        }
+    }
 
     /**
      * To include JS

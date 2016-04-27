@@ -52,6 +52,11 @@ class BehatHTMLFormatter implements Formatter {
     /**
      * @var
      */
+    private $stepTimer;
+
+    /**
+     * @var
+     */
     private $memory;
 
     /**
@@ -176,6 +181,7 @@ class BehatHTMLFormatter implements Formatter {
         $this->renderer = new BaseRenderer($renderer, $base_path);
         $this->printer = new FileOutputPrinter($this->renderer->getNameList(), $filename, $base_path);
         $this->timer = new Timer();
+        $this->stepTimer = new Timer();
         $this->memory = new Memory();
     }
 
@@ -199,6 +205,7 @@ class BehatHTMLFormatter implements Formatter {
             'tester.outline_tested.before'     => 'onBeforeOutlineTested',
             'tester.outline_tested.after'      => 'onAfterOutlineTested',
             'tester.step_tested.after'         => 'onAfterStepTested',
+            'tester.step_tested.before'         => 'onBeforeStepTested',
         );
     }
 
@@ -331,6 +338,11 @@ class BehatHTMLFormatter implements Formatter {
         return $this->timer;
     }
 
+    public function getStepTimer()
+    {
+        return $this->stepTimer;
+    }
+
     public function getMemory()
     {
         return $this->memory;
@@ -411,8 +423,8 @@ class BehatHTMLFormatter implements Formatter {
         $this->timer->start();
 
         /*Old logic*/
-/*      $print = $this->renderer->renderBeforeExercise($this);*/
-/*        $this->printer->write($print);*/
+        /*      $print = $this->renderer->renderBeforeExercise($this);*/
+        /*        $this->printer->write($print);*/
 
         /*New logic*/
         $print = $this->renderer->renderIndexBeforeExercise($this);
@@ -453,7 +465,7 @@ class BehatHTMLFormatter implements Formatter {
         $this->getCurrentFeature();
         $print = $this->renderer->renderBeforeSuite($this);
         /*Old logic, commet as tag for current suite noy used in index file*/
-/*        $this->printer->writeln($print);*/
+        /*        $this->printer->writeln($print);*/
     }
 
     /**
@@ -469,8 +481,10 @@ class BehatHTMLFormatter implements Formatter {
 
         /*New logic*/
         //$featureName = $this->getCurrentFeature()->getName();
-        $featureName = $this->getCurrentFeature()->getFileName();
-        $this->printer->featureWriteln($print, $featureName);
+        if ($this->getCurrentFeature() != null) {
+            $featureName = $this->getCurrentFeature()->getFileName();
+            $this->printer->featureWriteln($print, $featureName);
+        }
     }
 
     /**
@@ -495,8 +509,8 @@ class BehatHTMLFormatter implements Formatter {
         $this->currentFeature = $feature;
 
         /*Old logic*/
-/*      $print = $this->renderer->renderBeforeFeature($this);
-        $this->printer->writeln($print);*/
+        /*      $print = $this->renderer->renderBeforeFeature($this);
+                $this->printer->writeln($print);*/
 
         /*New logic*/
         $printBeforeExercise = $this->renderer->renderBeforeExercise($this);
@@ -610,19 +624,19 @@ class BehatHTMLFormatter implements Formatter {
     {
         /*Old logic*/
         /*Was commented as if in outline scenario was failed one scenario example then in report we get 2 fails scenerios but we should report just 1 fail*/
-/*      $scenarioPassed = $event->getTestResult()->isPassed();
-        if($scenarioPassed) {
-            $this->passedScenarios[] = $this->currentScenario;
-            $this->currentFeature->addPassedScenario();
-        } else {
-            $this->failedScenarios[] = $this->currentScenario;
-            $this->currentFeature->addFailedScenario();
-        }
-        $this->currentScenario->setLoopCount(sizeof($event->getTestResult()));
-        $this->currentScenario->setPassed($event->getTestResult()->isPassed());
-        $this->currentFeature->addScenario($this->currentScenario);
-        $print = $this->renderer->renderAfterOutline($this);
-        $this->printer->writeln($print);*/
+        /*      $scenarioPassed = $event->getTestResult()->isPassed();
+                if($scenarioPassed) {
+                    $this->passedScenarios[] = $this->currentScenario;
+                    $this->currentFeature->addPassedScenario();
+                } else {
+                    $this->failedScenarios[] = $this->currentScenario;
+                    $this->currentFeature->addFailedScenario();
+                }
+                $this->currentScenario->setLoopCount(sizeof($event->getTestResult()));
+                $this->currentScenario->setPassed($event->getTestResult()->isPassed());
+                $this->currentFeature->addScenario($this->currentScenario);
+                $print = $this->renderer->renderAfterOutline($this);
+                $this->printer->writeln($print);*/
 
         /*New logic*/
         $print = $this->renderer->renderAfterOutline($this);
@@ -633,17 +647,21 @@ class BehatHTMLFormatter implements Formatter {
 
     /**
      * @param BeforeStepTested $event
+     *     public function onBeforeStepTested(BeforeStepTested $event)
      */
-    public function onBeforeStepTested(BeforeStepTested $event)
+    public function onBeforeStepTested()
     {
-        $print = $this->renderer->renderBeforeStep($this);
-        /*Old logic*/
-        /*$this->printer->writeln($print);*/
+        $this->stepTimer->start();
 
-        /*New logic*/
-        //$featureName = $this->getCurrentFeature()->getName();
-        $featureName = $this->getCurrentFeature()->getFileName();
-        $this->printer->featureWriteln($print, $featureName);
+//        $print = $this->renderer->renderBeforeStep($this);
+//        /*Old logic*/
+//        /*$this->printer->writeln($print);*/
+//
+//        /*New logic*/
+//        //$featureName = $this->getCurrentFeature()->getName();
+//        $featureName = $this->getCurrentFeature()->getFileName();
+//        $this->printer->featureWriteln($print, $featureName);
+
     }
 
     /**
@@ -651,6 +669,7 @@ class BehatHTMLFormatter implements Formatter {
      */
     public function onAfterStepTested(AfterStepTested $event)
     {
+        $this->stepTimer->stop();
         $result = $event->getTestResult();
 
         //$this->dumpObj($event->getStep()->getArguments());
