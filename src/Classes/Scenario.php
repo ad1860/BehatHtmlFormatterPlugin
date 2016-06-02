@@ -54,10 +54,7 @@ class Scenario
 
     public function setScreenshotName($scenarioName)
     {
-        $scenarioName = preg_replace('/[^A-Za-z0-9]/', '', $scenarioName);
-        $scenarioName = trim(preg_replace('/\s+/', ' ', $scenarioName));
-        $scenarioName = str_replace(' ', '', $scenarioName);
-        $this->screenshotName = md5($scenarioName);
+        $this->screenshotName = $scenarioName;
     }
 
     /**

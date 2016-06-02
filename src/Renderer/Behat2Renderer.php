@@ -509,8 +509,9 @@ class Behat2Renderer implements RendererInterface {
             $relativeScreenshotPath = 'assets/screenshots/' . $feature->getScreenshotFolder() . DIRECTORY_SEPARATOR
                 . $scenario->getScreenshotName();
             $fullScreenshotPath = $obj->getBasePath() . '/build/html/behat/' . $relativeScreenshotPath;
-
+            $date_utc = new \DateTime(null, new \DateTimeZone("UTC"));
             $print .= '
+                        <pre class="backtrace">Error time: '. $date_utc->format(\DateTime::RFC850) .'</pre>
                         <pre class="backtrace">'.$step->getException().'</pre>';
             if (!$isVisual) {
                 $print .= '

@@ -125,6 +125,18 @@ class BehatHTMLFormatter implements Formatter {
     private $currentScenario;
 
     /**
+     * @var String
+     */
+    private $currentScenarioOutline = "";
+
+    /**
+     * @var String
+     */
+    private $currentScenarioType = "";
+
+
+
+    /**
      * @var Scenario[]
      */
     private $failedScenarios;
@@ -556,7 +568,29 @@ class BehatHTMLFormatter implements Formatter {
         $scenario->setName($event->getScenario()->getTitle());
         $scenario->setTags($event->getScenario()->getTags());
         $scenario->setLine($event->getScenario()->getLine());
-        $scenario->setScreenshotName($event->getScenario()->getTitle());
+
+        $scenarioName = $event->getScenario()->getTitle();
+        $scenarioName = preg_replace('/[^A-Za-z0-9]/', ' ', $scenarioName);
+        $scenarioName = trim(preg_replace('/\s+/', ' ', $scenarioName));
+        $scenarioName = str_replace(' ', '_', $scenarioName);
+        $scenarioNameMD5 = md5($scenarioName);
+        $scenarioOutlineName = $this->currentScenarioOutline;
+        $scenarioOutlineName = str_replace(' ', '_', $scenarioOutlineName);
+        $scenarioOutlineName = substr($scenarioOutlineName, 0, 25);
+        $scenarionType = $this->currentScenarioType;
+        $breakPointArrayValue = "";
+        if ($scenarionType === "Scenario Outline"){
+            $breakPointArrayKey = array_key_exists("screen resolution",$event->getScenario()->getTokens()) ? "screen resolution" : "breakpoint";
+            $breakPointArrayValue = $event->getScenario()->getTokens()[$breakPointArrayKey];
+        } else {
+            $scenarioOutlineName = $event->getScenario()->getTitle();
+            $scenarioOutlineName = str_replace(' ', '_', $scenarioOutlineName);
+            $scenarioOutlineName = substr($scenarioOutlineName, 0, 25);
+        }
+        $scenarioFolder = $scenarioOutlineName. "__" . $breakPointArrayValue . "__" . $scenarioNameMD5;
+        $scenario->setScreenshotName($scenarioFolder);
+
+
         $this->currentScenario = $scenario;
         $this->getCurrentFeature();
         $print = $this->renderer->renderBeforeScenario($this);
@@ -603,9 +637,13 @@ class BehatHTMLFormatter implements Formatter {
     public function onBeforeOutlineTested(BeforeOutlineTested $event)
     {
         $scenario = new Scenario();
-        $scenario->setName($event->getOutline()->getTitle());
+        $scenarioOutlineName = $event->getOutline()->getTitle();
+        $scenarioOutlineType = $event->getOutline()->getKeyword();
+        $scenario->setName($scenarioOutlineName);
         $scenario->setTags($event->getOutline()->getTags());
         $scenario->setLine($event->getOutline()->getLine());
+        $this->currentScenarioOutline = $scenarioOutlineName;
+        $this->currentScenarioType = $scenarioOutlineType;
         $this->currentScenario = $scenario;
         $print = $this->renderer->renderBeforeOutline($this);
         /*Old logic*/
